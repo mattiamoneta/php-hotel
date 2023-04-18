@@ -40,6 +40,60 @@
 
     ];
 
+    function performSearch($array){
+
+        $retVal = "";
+        $filtered = $array;
+
+        if($_GET['parking'] != 'null' || $_GET['stars'] != 'null'){
+            
+            $filtered = array_filter($array, function($arr_item){
+
+                #Se parcheggio e stelle sono filtrati e vengono trovati match
+                if($arr_item['parking'] == $_GET['parking'] && $arr_item['vote'] == $_GET['stars']){
+                    return true;
+                #Se parcheggio non filtrato, ma stelle corrispondono
+                } elseif($_GET['parking'] == 'null' && $arr_item['vote'] == $_GET['stars']){
+                    return true;
+                #Se stelle non filtrate, ma parcheggio corrisponde
+                } elseif($_GET['stars']  == 'null' && $arr_item['parking'] == $_GET['parking']){
+                    return true;
+                #Nessun match trovato
+                } else {
+                    return false;
+                }
+
+            });
+
+        }
+
+        foreach ($filtered as $item){
+
+            $hasParking = "";
+
+            if($item['parking'] == true){
+                $hasParking = 'Si';
+            }else {
+                $hasParking = 'No';
+            }
+
+            $retVal .= "<tr> 
+                    <th>".$item['name']."</th>
+                    <td>".$item['description']."</td>
+                    <td>".$hasParking."</td>
+                    <td>".$item['vote']."</td>
+                    <td>".$item['distance_to_center']."</td>
+                </tr>";
+        }  
+            
+        #Se non è stata trovata alcuna corrispondenza
+        if(empty($retVal)){
+
+            $retVal = "<div class='text-danger mb-3'>Nessun risultato</div>";
+        }
+        return $retVal;
+    }
+
 
 
 ?>
@@ -58,9 +112,38 @@
     <body>
 
         <main>
-            <div class="container">
+            <div class="container py-5">
+                <div class="row py-3">
+                    <div class="col-12">
+                    <form class="row row-cols-lg-auto g-3 align-items-center" action="index.php" method="GET">
+                         <div class="col-12">
+                            <select class="form-select" id="inlineFormSelectPref" name="parking">
+                                <option value="null">Parcheggio...</option>
+                                <option value="1">Si</option>
+                                <option value="">No</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <select class="form-select" id="inlineFormSelectPref" name="stars">
+                                <option value="null">Stelle...</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">Cerca</button>
+                            <button type="reset" class="btn btn-warning" id="submit-btn">Reset</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="row">
-                    <div class="col-12 py-5">
+                    <div class="col-12">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -73,24 +156,8 @@
                             </thead>
                             <tbody>
                                 <?php 
-                                    foreach($hotels as $hotel){
-
-                                        $hasParking = "";
-
-                                        if($hotel['parking'] == true){
-                                            $hasParking = 'Si';
-                                        }else {
-                                            $hasParking = 'No';
-                                        }
-
-                                        echo "<tr> 
-                                                <th>".$hotel['name']."</th>
-                                                <td>".$hotel['description']."</td>
-                                                <td>".$hasParking."</td>
-                                                <td>".$hotel['vote']."</td>
-                                                <td>".$hotel['distance_to_center']."</td>
-                                            </tr>";
-                                    }    
+                                        $return = performSearch($hotels);
+                                        echo $return;
                                 ?>                           
                             </tbody>
                         </table>
